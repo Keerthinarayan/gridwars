@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50 Boxes Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+            width: fit-content;
+        }
+        .box {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .box.active {
+            background-color: lightgreen;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>50 Boxes Game</h1>
+    <div id="player-form">
+        <input type="text" id="player-name" placeholder="Enter your name">
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <div id="game" class="hidden">
+        <div id="grid"></div>
+        <div id="question-area">
+            <p id="question"></p>
+            <input type="text" id="answer" placeholder="Your answer">
+            <button onclick="submitAnswer()">Submit</button>
+        </div>
+        <div id="leaderboard">
+            <h2>Leaderboard</h2>
+            <ul id="leaderboard-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        let currentPlayer = "";
+        let currentPosition = 0;
+        const questions = [
+            { question: "What is 2 + 2?", answer: "4", difficulty: "easy" },
+            { question: "What is the capital of France?", answer: "Paris", difficulty: "medium" },
+            { question: "What is 12 x 12?", answer: "144", difficulty: "hard" },
+            // Add more questions here.
+        ];
+
+        const leaderboard = [];
+
+        function startGame() {
+            const playerName = document.getElementById("player-name").value;
+            if (!playerName) {
+                alert("Please enter your name!");
+                return;
+            }
+            currentPlayer = playerName;
+            leaderboard.push({ name: currentPlayer, score: 0 });
+            document.getElementById("player-form").classList.add("hidden");
+            document.getElementById("game").classList.remove("hidden");
+            renderGrid();
+            showQuestion();
+            updateLeaderboard();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById("grid");
+            grid.innerHTML = "";
+            for (let i = 0; i < 50; i++) {
+                const box = document.createElement("div");
+                box.classList.add("box");
+                if (i === currentPosition) box.classList.add("active");
+                box.innerText = i + 1;
+                grid.appendChild(box);
+            }
+        }
+
+        function showQuestion() {
+            const currentQuestion = questions[currentPosition % questions.length];
+            document.getElementById("question").innerText = currentQuestion.question;
+        }
+
+        function submitAnswer() {
+            const currentQuestion = questions[currentPosition % questions.length];
+            const answer = document.getElementById("answer").value;
+            if (answer.toLowerCase() === currentQuestion.answer.toLowerCase()) {
+                alert("Correct Answer!");
+                if (currentQuestion.difficulty === "easy") {
+                    currentPosition += 1;
+                } else if (currentQuestion.difficulty === "medium") {
+                    currentPosition += 2;
+                } else {
+                    currentPosition += 3;
+                }
+                if (currentPosition >= 50) {
+                    alert(`Congratulations ${currentPlayer}, you won!`);
+                    updatePlayerScore(50);
+                    currentPosition = 0;
+                } else {
+                    updatePlayerScore(currentPosition);
+                }
+                renderGrid();
+                showQuestion();
+            } else {
+                alert("Wrong Answer! Try again.");
+            }
+        }
+
+        function updatePlayerScore(score) {
+            const player = leaderboard.find(p => p.name === currentPlayer);
+            if (player) {
+                player.score = score;
+            }
+            updateLeaderboard();
+        }
+
+        function updateLeaderboard() {
+            const leaderboardList = document.getElementById("leaderboard-list");
+            leaderboardList.innerHTML = "";
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard.forEach(player => {
+                const listItem = document.createElement("li");
+                listItem.innerText = `${player.name}: ${player.score}`;
+                leaderboardList.appendChild(listItem);
+            });
+        }
+    </script>
+</body>
+</html>
